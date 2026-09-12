@@ -1,0 +1,12 @@
+{
+  "comment": "Source of truth is ObservabilityStack. This file documents the widgets operators should expect in CloudWatch.",
+  "dashboardName": "AegisCloud-${env}",
+  "widgets": [
+    { "type": "text", "title": "Header", "markdown": "# AegisCloud self-healing operations" },
+    { "type": "metric", "title": "ALB request count" },
+    { "type": "metric", "title": "ALB 5XX" },
+    { "type": "metric", "title": "ECS order / customer / worker CPU and memory" },
+    { "type": "metric", "title": "RDS CPU, connections, free storage" },
+    { "type": "alarm", "title": "Open AegisCloud alarms" }
+  ]
+}

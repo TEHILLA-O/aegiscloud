@@ -1,0 +1,82 @@
+{
+  "Comment": "AegisCloud incident response. Canonical definition is synthesised by CDK in RemediationStack; this file is the readable contract.",
+  "StartAt": "ClassifyIncident",
+  "TimeoutSeconds": 900,
+  "States": {
+    "ClassifyIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "ResultPath": "$.classification",
+      "Next": "SafeToAutoRemediate?"
+    },
+    "SafeToAutoRemediate?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "And": [
+            { "Variable": "$.classification.safeToAutoRemediate", "BooleanEquals": true },
+            { "Variable": "$.classification.policy", "StringEquals": "AUTO_REMEDIATE" }
+          ],
+          "Next": "RemediateIncident"
+        },
+        {
+          "Variable": "$.classification.policy",
+          "StringEquals": "APPROVAL_REQUIRED",
+          "Next": "NotifyOperatorsApproval"
+        }
+      ],
+      "Default": "NotifyOperatorsObserve"
+    },
+    "RemediateIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "ResultPath": "$.remediation",
+      "Next": "WaitForConvergence"
+    },
+    "WaitForConvergence": {
+      "Type": "Wait",
+      "Seconds": 8,
+      "Next": "ValidateIncident"
+    },
+    "ValidateIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "ResultPath": "$.validation",
+      "Next": "Fixed?"
+    },
+    "Fixed?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validation.fixed",
+          "BooleanEquals": true,
+          "Next": "ClosedAutoRemediated"
+        }
+      ],
+      "Default": "NotifyAndEscalate"
+    },
+    "NotifyOperatorsApproval": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Next": "AwaitingApproval"
+    },
+    "NotifyOperatorsObserve": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Next": "RecordedObserve"
+    },
+    "NotifyAndEscalate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Next": "Escalated"
+    },
+    "ClosedAutoRemediated": { "Type": "Succeed" },
+    "AwaitingApproval": { "Type": "Succeed" },
+    "RecordedObserve": { "Type": "Succeed" },
+    "Escalated": {
+      "Type": "Fail",
+      "Error": "RemediationFailed",
+      "Cause": "Validation did not confirm the fix. Operator intervention required."
+    }
+  }
+}
