@@ -2,7 +2,7 @@
 
 AegisCloud is an event-driven AWS platform that deploys a realistic application estate, watches it, and remediates an approved class of failures without an operator on the call.
 
-The application workload is intentionally modest — order, customer and worker APIs on ECS Fargate. The engineering is in the surrounding control plane: networking, IAM, detection, orchestration, cost control and a Chaos Lab that can break the estate on demand.
+The application workload is intentionally modest: order, customer and worker APIs on ECS Fargate. The engineering is in the surrounding control plane: networking, IAM, detection, orchestration, cost control and a Chaos Lab that can break the estate on demand.
 
 ```
                          INTERNET
@@ -108,3 +108,17 @@ CDK TypeScript is the only deployment mechanism. There is no click-ops path.
 - Not a multi-region active-active platform. DR is backup + rebuild; see [DISASTER-RECOVERY.md](./DISASTER-RECOVERY.md).
 - Not a generic chaos-engineering product. The injectors cover four interview-visible failure classes.
 - Not an invitation to auto-remediate every GuardDuty finding. Destructive isolation is gated.
+
+## Repository layout
+
+```
+infrastructure/   CDK entrypoint and stacks (network, compute, data, security, observability, remediation, cost)
+services/demo-api/        Order / Customer / Worker (one image, SERVICE_NAME)
+services/remediation/     classify, remediate, validate, operations, shutdown
+workflows/incident-response/   Step Functions definition
+cli/aegis/        Operator CLI (status, resources, incidents, chaos, deploy, destroy, dr)
+chaos/            Controlled injectors for AegisCloud-tagged resources
+dashboards/       CloudWatch-oriented views
+tests/            Jest tests
+docs/             architecture, networking, incident response, chaos lab, security, DR, cost
+```
