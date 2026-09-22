@@ -2,6 +2,8 @@
 
 **AWS self-healing infrastructure, security and operations platform.**
 
+See [FAILURES.md](./FAILURES.md) for what can go wrong, what broke, how it was fixed, and results.
+
 AegisCloud deploys a realistic application environment, monitors it continuously, detects operational and security problems, and automatically fixes an approved class of those problems.
 
 The standout feature is a controlled Chaos Lab: you break AWS on purpose, then watch the platform put it back.
